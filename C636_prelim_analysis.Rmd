@@ -1,0 +1,46 @@
+---
+title: "C636 analysis"
+author: "Clay Ford"
+date: "Friday, April 24, 2015"
+output: pdf_document
+---
+
+Some preliminary analyses per our discussion on 24-April-2015. **Note that the source file contains missing values in cells Q1188 AND U1534**.
+
+
+```{r, echo=FALSE}
+load("c636.RData")
+
+```
+
+Below are points of interest. That is, values with z-score exceeding of 2.99 in either direction. The missing values (indicated with NA) are due to missing values in the source file.
+
+
+```{r}
+zscoresL[abs(zscoresL$value)>2.99,]
+```
+
+Here are some strip charts. Lab plates 6, 18, 21, 38 and 59 all have major outlying values.
+
+```{r, echo=FALSE}
+# create a stripchart for a given lab plate
+# num = the lab plate number
+labPlot <- function(num){
+  op <- par(mai=c(0.5,2,0.5,0.5))
+  stripchart(value ~ variable, data=zscoresL, subset= LAB.plate==num, pch=1, jitter = T, las=1,
+               main=paste("Lab Plate",num))
+  abline(h=1:22,lty=3)  
+  on.exit(op)
+}
+
+```
+
+```{r}
+for(i in levels(zscoresL$LAB.plate)){
+  labPlot(num=i)
+}
+
+```
+
+
+
