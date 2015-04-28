@@ -13,14 +13,25 @@ load("c636.RData")
 
 ```
 
-Below are points of interest. That is, values with z-score exceeding of 2.99 in either direction. The missing values (indicated with NA) are due to missing values in the source file.
+## Points of interest - Z-scores
 
+Values with z-score exceeding of 2.99 in either direction. The missing values (indicated with NA) are due to missing values in the source file.
 
 ```{r}
 zscoresL[abs(zscoresL$value)>2.99,]
 ```
 
-Here are some strip charts. Lab plates 6, 18, 21, 38 and 59 all have major outlying values.
+## Points of interest - Percent Inhibition (PI)
+
+Values with percent inhibition exceeding of 80 in either direction. The missing values (indicated with NA) are due to missing values in the source file.
+
+```{r}
+PIL[abs(PIL$value)>=80,]
+```
+
+## Strip Charts - Z-scores
+
+Lab plates 6, 18, 21, 38 and 59 all have major outlying values.
 
 ```{r, echo=FALSE}
 # create a stripchart for a given lab plate
@@ -35,7 +46,7 @@ labPlot <- function(num){
 
 ```
 
-```{r}
+```{r fig.height=3.6, fig.width=8, }
 for(i in levels(zscoresL$LAB.plate)){
   labPlot(num=i)
 }

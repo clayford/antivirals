@@ -89,7 +89,7 @@ ratios <- lapply(tmp, calRatio)
 ratios <- do.call(rbind,ratios)
 row.names(ratios) <- NULL
 
-# Calculate z-scores ------------------------------------------------------
+# Calculate z-scores & percent inhibition ---------------------------------
 
 cols <- which(sapply(ratios,is.numeric))
 tmp <- split(ratios, ratios$LAB.plate)
@@ -105,23 +105,42 @@ zScore <- function(x){
 zscores <- lapply(tmp,zScore)
 zscores <- do.call(rbind,zscores)
 row.names(zscores) <- NULL
+
+# percent inhibition
+PI <- function(x){
+  meanVDMSO <- mean(c(x$Virus.DMSO_1, x$Virus.DMSO_2), na.rm=T)
+  meanNoVirus <- mean(c(x$No.Virus_1, x$No.Virus_2), na.rm=T)
+  pis <- apply(x[,cols],2,function(x)(meanVDMSO - x)/(meanVDMSO - meanNoVirus)*100)
+  data.frame(LAB.plate=x$LAB.plate[1:nrow(pis)],Well=x$Well[1:nrow(pis)],pis)
+}
+
+PIs <- lapply(tmp, PI)
+PIs <- do.call(rbind, PIs)
+row.names(PIs) <- NULL
+
 # tidy up
 rm(tmp, cols)
 
-# reshape zscores to faciliate plotting
+# reshape zscores and PI to faciliate plotting
 zscoresL <- melt(zscores, id.vars = 1:2)
-row.names(zscore) <- NULL
+row.names(zscoresL) <- NULL
+
+PIL <- melt(PIs, id.vars = 1:2)
+row.names(PIL) <- NULL
+
 
 # tidy up
-rm(zscore, zscores)
+rm(zScore, calRatio, PI, zscores, PIs)
 
 # remove the no virus rows
 xx <- which(zscoresL$variable %in% c("No.Virus_1","No.Virus_2"))
 zscoresL <- zscoresL[-xx,]
 zscoresL$variable <- droplevels(zscoresL$variable)
-
+PIL <- PIL[-xx,]
+PIL$variable <- droplevels(PIL$variable)
+rm(xx)
 # save data for later use
-save(zscoresL, dat, ratios, file="c636.RData")
+save(zscoresL, PIL, dat, ratios, file="c636.RData")
 
 
 # Points of interest ------------------------------------------------------
@@ -129,6 +148,8 @@ save(zscoresL, dat, ratios, file="c636.RData")
 # view points of interest (absolute value > 2.99)
 zscoresL[abs(zscoresL$value)>2.99,]
 
+# percent inhibition >= 80%
+PIL[abs(PIL$value)>=80,]
 
 # Plots -------------------------------------------------------------------
 
